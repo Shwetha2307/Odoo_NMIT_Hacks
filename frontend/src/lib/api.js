@@ -50,4 +50,5 @@ export const api = {
 
   myPayroll: () => request("/payroll/me"),
   allPayroll: () => request("/payroll"),
+  updatePayroll: (id, payload) => request(`/payroll/${id}`, { method: "PATCH", body: payload }),
 };
