@@ -11,10 +11,13 @@ const PUBLIC_FIELDS = {
   email: true,
   name: true,
   role: true,
-  jobTitle: true,
+  isEmailVerified: true,
   phone: true,
   address: true,
-  profilePicture: true,
+  photoUrl: true,
+  jobTitle: true,
+  department: true,
+  dateOfJoining: true,
   baseSalary: true,
   allowances: true,
   deductions: true,
@@ -27,30 +30,31 @@ router.get("/me", async (req, res) => {
     where: { id: req.user.id },
     select: PUBLIC_FIELDS,
   });
+  if (!user) return res.status(404).json({ error: "Account not found" });
   res.json({ user });
 });
 
-// PATCH /api/employees/me — employees can only touch a limited set of fields
+// PATCH /api/employees/me — employees may only touch these three fields
 router.patch("/me", async (req, res) => {
-  const { phone, address, profilePicture } = req.body;
+  const { phone, address, photoUrl } = req.body;
   const user = await prisma.user.update({
     where: { id: req.user.id },
-    data: { phone, address, profilePicture },
+    data: { phone, address, photoUrl },
     select: PUBLIC_FIELDS,
   });
   res.json({ user });
 });
 
-// GET /api/employees — admin only, list all employees
+// GET /api/employees — admin only, list everyone
 router.get("/", requireRole("ADMIN"), async (req, res) => {
   const users = await prisma.user.findMany({
-    select: { ...PUBLIC_FIELDS, baseSalary: false }, // keep salary out of the list view
+    select: PUBLIC_FIELDS,
     orderBy: { name: "asc" },
   });
   res.json({ users });
 });
 
-// GET /api/employees/:id — admin only
+// GET /api/employees/:id — admin only, one employee's full profile
 router.get("/:id", requireRole("ADMIN"), async (req, res) => {
   const user = await prisma.user.findUnique({
     where: { id: req.params.id },
@@ -60,12 +64,21 @@ router.get("/:id", requireRole("ADMIN"), async (req, res) => {
   res.json({ user });
 });
 
-// PATCH /api/employees/:id — admin can edit any field, including salary
+// PATCH /api/employees/:id — admin only, can edit any field incl. salary/role
 router.patch("/:id", requireRole("ADMIN"), async (req, res) => {
-  const { name, jobTitle, phone, address, profilePicture, baseSalary, allowances, deductions, role } = req.body;
+  const {
+    name, phone, address, photoUrl, jobTitle, department,
+    dateOfJoining, role, baseSalary, allowances, deductions,
+  } = req.body;
+
   const user = await prisma.user.update({
     where: { id: req.params.id },
-    data: { name, jobTitle, phone, address, profilePicture, baseSalary, allowances, deductions, role },
+    data: {
+      name, phone, address, photoUrl, jobTitle, department,
+      role: role === "ADMIN" ? "ADMIN" : role === "EMPLOYEE" ? "EMPLOYEE" : undefined,
+      dateOfJoining: dateOfJoining ? new Date(dateOfJoining) : undefined,
+      baseSalary, allowances, deductions,
+    },
     select: PUBLIC_FIELDS,
   });
   res.json({ user });
