@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   User,
@@ -37,15 +38,8 @@ import {
   Data face:   JetBrains Mono (times, ids, hours)
 */
 
-const FONT_IMPORT_ID = "dayflow-fonts";
-if (typeof document !== "undefined" && !document.getElementById(FONT_IMPORT_ID)) {
-  const link = document.createElement("link");
-  link.id = FONT_IMPORT_ID;
-  link.rel = "stylesheet";
-  link.href =
-    "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap";
-  document.head.appendChild(link);
-}
+// Fonts (Space Grotesk / Inter / JetBrains Mono) are loaded once in
+// index.html so they're available before first paint on every route.
 
 const COLORS = {
   ink: "#17203A",
@@ -332,10 +326,15 @@ const NAV = [
   { icon: Wallet, label: "Payroll" },
 ];
 
-export default function Dashboard() {
-  const [role, setRole] = useState("employee");
+export default function Dashboard({ initialRole = "employee" }) {
+  const navigate = useNavigate();
+  const [role, setRole] = useState(initialRole);
   const [active, setActive] = useState("Dashboard");
   const isAdmin = role === "admin";
+
+  function handleLogout() {
+    navigate("/login", { replace: true });
+  }
 
   return (
     <div className="min-h-screen w-full flex" style={{ backgroundColor: COLORS.paper, fontFamily: "Inter, sans-serif" }}>
@@ -398,7 +397,11 @@ export default function Dashboard() {
               ))}
             </div>
           </div>
-          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm" style={{ color: "#C9C3B4" }}>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm"
+            style={{ color: "#C9C3B4" }}
+          >
             <LogOut size={16} />
             Log out
           </button>
