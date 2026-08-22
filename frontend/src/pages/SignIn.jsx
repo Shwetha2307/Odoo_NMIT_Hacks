@@ -4,21 +4,24 @@ import { COLORS } from "../lib/theme.js";
 import { api, setToken } from "../lib/api.js";
 
 export default function SignIn({ onSignedIn, onSwitchToSignUp }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  function update(field, value) {
+    setForm((f) => ({ ...f, [field]: value }));
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
-    if (!email || !password) {
+    if (!form.email || !form.password) {
       setError("Enter your email and password.");
       return;
     }
     setLoading(true);
     try {
-      const { token, user } = await api.signin({ email, password });
+      const { token, user } = await api.signin(form);
       setToken(token);
       onSignedIn(user);
     } catch (err) {
@@ -45,10 +48,10 @@ export default function SignIn({ onSignedIn, onSwitchToSignUp }) {
 
         <div className="rounded-2xl p-6" style={{ backgroundColor: COLORS.card, border: `1px solid ${COLORS.mist}` }}>
           <h1 style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 600, fontSize: 18, color: COLORS.ink }}>
-            Sign in
+            Welcome back
           </h1>
-          <p className="text-sm mt-1 mb-5" style={{ color: "#8A8578" }}>
-            Every workday, perfectly aligned.
+          <p className="text-sm mt-1 mb-5" style={{ color: COLORS.muted }}>
+            Sign in with your registered email.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-3">
@@ -56,8 +59,8 @@ export default function SignIn({ onSignedIn, onSwitchToSignUp }) {
               <label className="text-xs font-medium" style={{ color: COLORS.ink }}>Email</label>
               <input
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={form.email}
+                onChange={(e) => update("email", e.target.value)}
                 placeholder="name@company.com"
                 className="mt-1 w-full rounded-lg px-3 py-2 text-sm outline-none"
                 style={{ border: `1px solid ${COLORS.mist}` }}
@@ -67,8 +70,8 @@ export default function SignIn({ onSignedIn, onSwitchToSignUp }) {
               <label className="text-xs font-medium" style={{ color: COLORS.ink }}>Password</label>
               <input
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={form.password}
+                onChange={(e) => update("password", e.target.value)}
                 placeholder="••••••••"
                 className="mt-1 w-full rounded-lg px-3 py-2 text-sm outline-none"
                 style={{ border: `1px solid ${COLORS.mist}` }}
@@ -92,7 +95,7 @@ export default function SignIn({ onSignedIn, onSwitchToSignUp }) {
           </form>
         </div>
 
-        <p className="text-xs text-center mt-4" style={{ color: "#8A8578" }}>
+        <p className="text-xs text-center mt-4" style={{ color: COLORS.muted }}>
           New here?{" "}
           <button onClick={onSwitchToSignUp} className="font-medium" style={{ color: COLORS.ink }}>
             Create an account
