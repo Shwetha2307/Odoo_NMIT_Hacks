@@ -1,0 +1,19 @@
+# Normalize line endings for everyone, regardless of OS or editor.
+# This is what actually stops the "every line changed" diffs/conflicts
+# you get when Windows and Mac/Linux contributors touch the same files.
+* text=auto eol=lf
+
+# Never touch line endings on binaries.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+
+# Windows batch/shell wrappers genuinely need CRLF — leave them alone.
+*.cmd text eol=crlf
+*.bat text eol=crlf
