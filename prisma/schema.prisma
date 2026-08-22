@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  EMPLOYEE
+  ADMIN
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  HALF_DAY
+  LEAVE
+}
+
+enum LeaveType {
+  PAID
+  SICK
+  UNPAID
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id              String    @id @default(cuid())
+  employeeId      String    @unique
+  email           String    @unique
+  password        String
+  name            String
+  role            Role      @default(EMPLOYEE)
+  isEmailVerified Boolean   @default(false)
+  phone           String?
+  address         String?
+  photoUrl        String?
+  jobTitle        String?
+  department      String?
+  dateOfJoining   DateTime?
+  baseSalary      Float     @default(0)
+  allowances      Float     @default(0)
+  deductions      Float     @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  attendance      Attendance[]
+  leaveRequests   LeaveRequest[]  @relation("EmployeeLeaves")
+  reviewedLeaves  LeaveRequest[]  @relation("ReviewerLeaves")
+
+  @@map("users")
+}
+
+model Attendance {
+  id        String            @id @default(cuid())
+  userId    String
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime
+  checkIn   DateTime?
+  checkOut  DateTime?
+  status    AttendanceStatus  @default(ABSENT)
+  createdAt DateTime          @default(now())
+
+  @@unique([userId, date])
+  @@map("attendance")
+}
+
+model LeaveRequest {
+  id         String       @id @default(cuid())
+  userId     String
+  user       User         @relation("EmployeeLeaves", fields: [userId], references: [id], onDelete: Cascade)
+  type       LeaveType
+  startDate  DateTime
+  endDate    DateTime
+  remarks    String?
+  status     LeaveStatus  @default(PENDING)
+  comment    String?
+  reviewedBy String?
+  reviewer   User?        @relation("ReviewerLeaves", fields: [reviewedBy], references: [id])
+  createdAt  DateTime     @default(now())
+
+  @@map("leave_requests")
+}
