@@ -8,6 +8,10 @@
     "build": "vite build",
     "preview": "vite preview"
   },
+  "prisma": {
+  "seed": "node prisma/seed.js"
+}
+
   "dependencies": {
     "esbuild": "^0.28.2",
     "lucide-react": "^0.379.0",
